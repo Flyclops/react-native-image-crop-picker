@@ -1,35 +1,35 @@
 package com.reactnative.ivpusic.imagepicker;
 
-import com.facebook.react.ReactPackage;
-import com.facebook.react.bridge.JavaScriptModule;
+import com.facebook.react.LazyReactPackage;
+import com.facebook.react.bridge.ModuleSpec;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.uimanager.ViewManager;
+import com.facebook.react.module.model.ReactModuleInfoProvider;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+
+import javax.inject.Provider;
 
 /**
  * Created by ipusic on 5/16/16.
  */
-public class PickerPackage implements ReactPackage {
+public class PickerPackage extends LazyReactPackage {
 
-    // Deprecated RN 0.47
-    public List<Class<? extends JavaScriptModule>> createJSModules() {
-        return Collections.emptyList();
+    @Override
+    public List<ModuleSpec> getNativeModules(final ReactApplicationContext reactContext) {
+        return Arrays.asList(
+                ModuleSpec.nativeModuleSpec(PickerModule.class, new Provider<NativeModule>() {
+                    @Override
+                    public NativeModule get() {
+                        return new PickerModule(reactContext);
+                    }
+                })
+        );
     }
 
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        List<NativeModule> modules = new ArrayList<>();
-        modules.add(new PickerModule(reactContext));
-
-        return modules;
+    public ReactModuleInfoProvider getReactModuleInfoProvider() {
+        return LazyReactPackage.getReactModuleInfoProviderViaReflection(this);
     }
 }
