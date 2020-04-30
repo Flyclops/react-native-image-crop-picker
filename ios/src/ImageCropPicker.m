@@ -170,27 +170,27 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
             return;
         }
 
-        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-        picker.delegate = self;
-        picker.allowsEditing = NO;
-        picker.sourceType = UIImagePickerControllerSourceTypeCamera;
-
-        NSString *mediaType = [self.options objectForKey:@"mediaType"];
-        
-        if ([mediaType isEqualToString:@"video"]) {
-            NSArray *availableTypes = [UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera];
-
-            if ([availableTypes containsObject:(NSString *)kUTTypeMovie]) {
-                picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeMovie, nil];
-                picker.videoQuality = UIImagePickerControllerQualityTypeHigh;
-            }
-        }
-
-        if ([[self.options objectForKey:@"useFrontCamera"] boolValue]) {
-            picker.cameraDevice = UIImagePickerControllerCameraDeviceFront;
-        }
-
         dispatch_async(dispatch_get_main_queue(), ^{
+            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+            picker.delegate = self;
+            picker.allowsEditing = NO;
+            picker.sourceType = UIImagePickerControllerSourceTypeCamera;
+
+            NSString *mediaType = [self.options objectForKey:@"mediaType"];
+            
+            if ([mediaType isEqualToString:@"video"]) {
+                NSArray *availableTypes = [UIImagePickerController availableMediaTypesForSourceType:UIImagePickerControllerSourceTypeCamera];
+
+                if ([availableTypes containsObject:(NSString *)kUTTypeMovie]) {
+                    picker.mediaTypes = [[NSArray alloc] initWithObjects:(NSString *)kUTTypeMovie, nil];
+                    picker.videoQuality = UIImagePickerControllerQualityTypeHigh;
+                }
+            }
+
+            if ([[self.options objectForKey:@"useFrontCamera"] boolValue]) {
+                picker.cameraDevice = UIImagePickerControllerCameraDeviceFront;
+            }
+
             [[self getRootVC] presentViewController:picker animated:YES completion:nil];
         });
     }];
@@ -213,16 +213,18 @@ RCT_EXPORT_METHOD(openCamera:(NSDictionary *)options
              withFileName:fileName
       withLocalIdentifier:nil
                completion:^(NSDictionary* video) {
-                   if (video == nil) {
-                       [picker dismissViewControllerAnimated:YES completion:[self waitAnimationEnd:^{
-                           self.reject(ERROR_CANNOT_PROCESS_VIDEO_KEY, ERROR_CANNOT_PROCESS_VIDEO_MSG, nil);
-                       }]];
-                       return;
-                   }
+                   dispatch_async(dispatch_get_main_queue(), ^{
+                    if (video == nil) {
+                        [picker dismissViewControllerAnimated:YES completion:[self waitAnimationEnd:^{
+                            self.reject(ERROR_CANNOT_PROCESS_VIDEO_KEY, ERROR_CANNOT_PROCESS_VIDEO_MSG, nil);
+                        }]];
+                        return;
+                    }
 
-                   [picker dismissViewControllerAnimated:YES completion:[self waitAnimationEnd:^{
-                       self.resolve(video);
-                   }]];
+                    [picker dismissViewControllerAnimated:YES completion:[self waitAnimationEnd:^{
+                        self.resolve(video);
+                    }]];
+                   });
                }
          ];
     } else {
